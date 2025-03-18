@@ -26,6 +26,7 @@ const starStyle = {
 
 export default function StarRating({ maxRating = 5 }) {
   const [rating, setRating] = useState(0);
+  const [tempRating, setTempRating] = useState(0);
   // handleSubmit //
   function handleSubmit(rating) {
     setRating(rating);
@@ -38,19 +39,26 @@ export default function StarRating({ maxRating = 5 }) {
           <Star
             key={i}
             onRate={() => handleSubmit(i + 1)}
-            full={rating >= i + 1}
+            full={tempRating ? tempRating >= i + 1 : rating >= i + 1}
+            onTempHover={() => setTempRating(i + 1)}
+            onTempLeave={() => setTempRating(0)}
           />
         ))}
       </div>
-      <p style={text}>{rating || ""}</p>
+      <p style={text}>{tempRating || rating || ""}</p>
     </div>
   );
 }
 
 // Start component //
-function Star({ onRate, full }) {
+function Star({ onRate, full, onTempHover, onTempLeave }) {
   return (
-    <span style={starStyle} onClick={onRate}>
+    <span
+      style={starStyle}
+      onClick={onRate}
+      onMouseEnter={onTempHover}
+      onMouseLeave={onTempLeave}
+    >
       {full ? (
         <svg
           xmlns="http://www.w3.org/2000/svg"
