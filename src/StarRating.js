@@ -1,6 +1,8 @@
 // Here, i'm creating a reuseable component.
 
 import { useState } from "react";
+// importing PropTypes for prop checking.
+import PropTypes from "prop-types";
 
 const starContainer = {
   display: "flex",
@@ -12,6 +14,15 @@ const star = {
 };
 
 // StarRating component //
+// prop checking
+StarRating.prototype = {
+  maxRating: PropTypes.number,
+  defaultRating: PropTypes.number,
+  color: PropTypes.string,
+  size: PropTypes.number,
+  messages: PropTypes.array,
+  onSetRating: PropTypes.func,
+};
 
 export default function StarRating({
   maxRating = 5,
