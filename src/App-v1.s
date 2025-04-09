@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const tempMovieData = [
   {
@@ -50,22 +50,10 @@ const tempWatchedData = [
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 // The App comonent is parent of all other components //
-///// API KEY is from this site (https://www.omdbapi.com/)/////
-const KEY = "e9c51d8d";
 export default function App() {
   // here i'm lifting up state
-  const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
-  //  here, i'm using useEffect hook here
-  // The function inside useEffect is executed after the component renders for the first time (on mount).
-  // It fetches data from the OMDB API using the fetch function.
-  useEffect(function () {
-    // this API link is from this site (https://www.omdbapi.com/)
-    fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-      .then((res) => res.json())
-
-      .then((data) => setMovies(data.Search));
-  }, []);
+  const [movies, setMovies] = useState(tempMovieData);
+  const [watched, setWatched] = useState(tempWatchedData);
   return (
     <>
       {/* logo, search, NumResults are childrens  of NavBar. */}
