@@ -51,20 +51,46 @@ const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 // The App comonent is parent of all other components //
 ///// API KEY is from this site (https://www.omdbapi.com/)/////
-const KEY = "e9c51d8d";
+// here i'm lifting up state
 export default function App() {
-  // here i'm lifting up state
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const KEY = "e9c51d8d";
+  const query = "Interstellar";
+
   //  here, i'm using useEffect hook here
   // The function inside useEffect is executed after the component renders for the first time (on mount).
   // It fetches data from the OMDB API using the fetch function.
   useEffect(function () {
-    // this API link is from this site (https://www.omdbapi.com/)
-    fetch(`http://www.omdbapi.com/?apikey=${KEY}&s=interstellar`)
-      .then((res) => res.json())
-
-      .then((data) => setMovies(data.Search));
+    async function moviesData() {
+      try {
+        // this API link is from this site (https://www.omdbapi.com/)
+        // this shows loading spinner on the screen before the movie data is fetched.
+        setIsLoading(true);
+        const res = await fetch(
+          `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+        );
+        //Throwing error when there is problem when fetching data.
+        if (!res.ok) throw new Error("Something went wrong");
+        const data = await res.json();
+        //  Throwing error if the search do not matches the search movies
+        if (data.Response === "False") throw new Error("movies not found ");
+        setMovies(data.Search);
+        // console.log(data.Search);
+        // setIsLoading is false once the data is fetched.
+      } catch (err) {
+        // for catching error.
+        console.error(err.message);
+        setError(err.message);
+      } finally {
+        // finally exicute the code
+        setIsLoading(false);
+      }
+    }
+    // Here, i'm calling moviesData function because its inside another function.
+    moviesData();
   }, []);
   return (
     <>
@@ -76,7 +102,13 @@ export default function App() {
       </NavBar>
       <Main>
         <Box>
-          <MovieList movies={movies} />
+          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
+          {/* if the movie data is loading  */}
+          {isLoading && <Loader />}
+          {/* if the response is not loading and there is no error  */}
+          {!isLoading && !error && <MovieList movies={movies} />}
+          {/* if there is error  */}
+          {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
           <WatchedSummary watched={watched} />
@@ -95,6 +127,21 @@ export default function App() {
           } */}
       </Main>
     </>
+  );
+}
+
+// Loader component that loads on the screen before the movie data is fetched.
+function Loader() {
+  return <p className="loader">loading...</p>;
+}
+
+//  Error message
+function ErrorMessage({ message }) {
+  return (
+    <p className="error">
+      <span>❌</span>
+      {message}
+    </p>
   );
 }
 // Spliting a large component into small components //
