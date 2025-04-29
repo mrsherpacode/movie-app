@@ -57,8 +57,19 @@ export default function App() {
   const [movies, setMovies] = useState([]);
   const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState();
+  const [selectedId, setSelectedId] = useState(null);
   const KEY = "e9c51d8d";
+
+  // Show movie details //
+  function handleMovieDetails(id) {
+    // if the movie is already selected then set it to null otherwise set it to id.
+    setSelectedId((selectedId) => (id === selectedId ? null : id));
+  }
+  // close movie details //
+  function handleCloseMovie() {
+    setSelectedId(null);
+  }
 
   //  here, i'm using useEffect hook here
   // The function inside useEffect is executed after the component renders for the first time (on mount).
@@ -80,7 +91,7 @@ export default function App() {
           //  Throwing error if the search do not matches the search movies
           if (data.Response === "False") throw new Error("movies not found ");
           setMovies(data.Search);
-          // console.log(data.Search);
+          console.log(data.Search);
           // setIsLoading is false once the data is fetched.
         } catch (err) {
           // for catching error.
@@ -118,13 +129,24 @@ export default function App() {
           {/* if the movie data is loading  */}
           {isLoading && <Loader />}
           {/* if the response is not loading and there is no error  */}
-          {!isLoading && !error && <MovieList movies={movies} />}
+          {!isLoading && !error && (
+            <MovieList movies={movies} onSelection={handleMovieDetails} />
+          )}
           {/* if there is error  */}
           {error && <ErrorMessage message={error} />}
         </Box>
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedId ? (
+            <MovieDetails
+              selectedId={selectedId}
+              handleCloseMovie={handleCloseMovie}
+            />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
         </Box>
 
         {/* 
@@ -211,19 +233,24 @@ function Box({ children }) {
   );
 }
 // MovieList component //
-function MovieList({ movies }) {
+function MovieList({ movies, selectedId, onSelection }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie
+          movie={movie}
+          key={movie.imdbID}
+          selectedId={selectedId}
+          onSelection={onSelection}
+        />
       ))}
     </ul>
   );
 }
 // Movie component //
-function Movie({ movie }) {
+function Movie({ movie, selectedId, onSelection }) {
   return (
-    <li>
+    <li onClick={() => onSelection(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -297,5 +324,16 @@ function WatchMovie({ movie }) {
         </p>
       </div>
     </li>
+  );
+}
+// Movie details component
+function MovieDetails({ selectedId, handleCloseMovie }) {
+  return (
+    <div className="details">
+      <button className="btn-back" onClick={handleCloseMovie}>
+        &#129056;
+      </button>
+      ;{selectedId}
+    </div>
   );
 }
