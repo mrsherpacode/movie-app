@@ -72,6 +72,12 @@ export default function App() {
     setSelectedId(null);
   }
 
+  //////////////////////////////////////
+  // This function add new movies to the existing movie list
+  function handleAddWatched(movie) {
+    setWatched((watched) => [...watched, movie]);
+  }
+
   //  here, i'm using useEffect hook here
   // The function inside useEffect is executed after the component renders for the first time (on mount).
   // It fetches data from the OMDB API using the fetch function.
@@ -142,6 +148,8 @@ export default function App() {
               selectedId={selectedId}
               handleCloseMovie={handleCloseMovie}
               KEY={KEY}
+              onAddWatched={handleAddWatched}
+              watched={watched}
             />
           ) : (
             <>
@@ -265,10 +273,24 @@ function Movie({ movie, selectedId, onSelection }) {
   );
 }
 
-// Movie details component
-function MovieDetails({ selectedId, handleCloseMovie, KEY }) {
+// Movie details component //
+function MovieDetails({
+  selectedId,
+  handleCloseMovie,
+  KEY,
+  onAddWatched,
+  watched,
+}) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState("");
+  // Here, i'm deriving  the state
+  // checking if it's watched or not
+  const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
+  // getting userRate
+  const userMovieRating = watched.find(
+    (movie) => movie.imdbID === selectedId
+  )?.userRating;
   // Destructuring the object
   const {
     Title: title,
@@ -282,6 +304,24 @@ function MovieDetails({ selectedId, handleCloseMovie, KEY }) {
     Director: director,
     Genre: genre,
   } = movie;
+
+  //////////////////////////////
+  // handle add function
+  function handleAdd() {
+    const addWatchedMovie = {
+      imdbID: selectedId,
+      poster,
+      title,
+      year,
+      imdbRating: Number(imdbRating),
+      runtime: Number(runtime.split(" ").at(0)),
+      userRating,
+    };
+
+    onAddWatched(addWatchedMovie);
+    handleCloseMovie();
+  }
+
   useEffect(
     function () {
       async function getMovieDetails() {
@@ -323,12 +363,29 @@ function MovieDetails({ selectedId, handleCloseMovie, KEY }) {
             </div>
           </header>
           <section>
-            <StarRating maxRating={10} size={24} />
-            <p>
-              <em>{plot}</em>
-            </p>
-            <p>Starging {actors}</p>
-            <p>directed by {director} </p>
+            <div className="rating">
+              {!isWatched ? (
+                <>
+                  <StarRating
+                    maxRating={10}
+                    size={24}
+                    onSetRating={setUserRating}
+                  />
+                  {userRating > 0 && (
+                    <button className="btn-add" onClick={handleAdd}>
+                      + Add to the list
+                    </button>
+                  )}
+                  <p>
+                    <em>{plot}</em>
+                  </p>
+                  <p>Starging : {actors}</p>
+                  <p>Directed by : {director} </p>
+                </>
+              ) : (
+                <p> You rated this movie {userMovieRating}</p>
+              )}
+            </div>
           </section>
         </>
       )}
@@ -380,8 +437,8 @@ function WatchedMovieList({ watched }) {
 function WatchMovie({ movie }) {
   return (
     <li>
-      <img src={movie.Poster} alt={`${movie.Title} poster`} />
-      <h3>{movie.Title}</h3>
+      <img src={movie.poster} alt={`${movie.title} poster`} />
+      <h3>{movie.title}</h3>
       <div>
         <p>
           <span>⭐️</span>
