@@ -77,6 +77,13 @@ export default function App() {
   function handleAddWatched(movie) {
     setWatched((watched) => [...watched, movie]);
   }
+  /////////////////////////////////////
+  //  This function deletes the watched movie from the  movie list
+  // The filter method creates a new array that includes only the movies whose imdbID does not match the id passed to the function.
+  // This effectively removes the movie with the matching imdbID from the watched list.
+  function handleDeleteWatched(id) {
+    setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+  }
 
   //  here, i'm using useEffect hook here
   // The function inside useEffect is executed after the component renders for the first time (on mount).
@@ -154,7 +161,10 @@ export default function App() {
           ) : (
             <>
               <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} />
+              <WatchedMovieList
+                watched={watched}
+                onDeleteWatched={handleDeleteWatched}
+              />
             </>
           )}
         </Box>
@@ -383,7 +393,9 @@ function MovieDetails({
                   <p>Directed by : {director} </p>
                 </>
               ) : (
-                <p> You rated this movie {userMovieRating}</p>
+                <p>
+                  You rated this movie {userMovieRating} <span>⭐</span>
+                </p>
               )}
             </div>
           </section>
@@ -424,17 +436,21 @@ function WatchedSummary({ watched }) {
 }
 
 // WatchedMovieList Component
-function WatchedMovieList({ watched }) {
+function WatchedMovieList({ watched, onDeleteWatched }) {
   return (
     <ul className="list">
       {watched.map((movie) => (
-        <WatchMovie movie={movie} key={movie.imdbID} />
+        <WatchMovie
+          movie={movie}
+          key={movie.imdbID}
+          onDeleteWatched={onDeleteWatched}
+        />
       ))}
     </ul>
   );
 }
 // WatchMovie component
-function WatchMovie({ movie }) {
+function WatchMovie({ movie, onDeleteWatched }) {
   return (
     <li>
       <img src={movie.poster} alt={`${movie.title} poster`} />
@@ -452,6 +468,12 @@ function WatchMovie({ movie }) {
           <span>⏳</span>
           <span>{movie.runtime} min</span>
         </p>
+        <button
+          className="btn-delete"
+          onClick={() => onDeleteWatched(movie.imdbID)}
+        >
+          X
+        </button>
       </div>
     </li>
   );
