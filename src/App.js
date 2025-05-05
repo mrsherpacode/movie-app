@@ -331,6 +331,16 @@ function MovieDetails({
     onAddWatched(addWatchedMovie);
     handleCloseMovie();
   }
+  //  This useEffect changes the title of movie in the browser title.
+
+  useEffect(
+    function () {
+      // if there is no title immediately return.
+      if (!title) return;
+      document.title = `Movie || ${title}`;
+    },
+    [title]
+  );
 
   useEffect(
     function () {
@@ -420,11 +430,11 @@ function WatchedSummary({ watched }) {
         </p>
         <p>
           <span>⭐️</span>
-          <span>{avgImdbRating}</span>
+          <span>{avgImdbRating.toFixed(2)}</span>
         </p>
         <p>
           <span>🌟</span>
-          <span>{avgUserRating}</span>
+          <span>{avgUserRating.toFixed(2)}</span>
         </p>
         <p>
           <span>⏳</span>
