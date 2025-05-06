@@ -90,6 +90,8 @@ export default function App() {
   // It fetches data from the OMDB API using the fetch function.
   useEffect(
     function () {
+      //  This native browser API cancel the fetch request.
+      const controller = new AbortController();
       async function moviesData() {
         try {
           // this API link is from this site (https://www.omdbapi.com/)
@@ -97,7 +99,9 @@ export default function App() {
           setIsLoading(true);
           setError("");
           const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
+            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
+            //this seconds argument connects with asynchronous operation.
+            { signal: controller.signal }
           );
           //Throwing error when there is problem when fetching data.
           if (!res.ok) throw new Error("Something went wrong");
@@ -105,12 +109,16 @@ export default function App() {
           //  Throwing error if the search do not matches the search movies
           if (data.Response === "False") throw new Error("movies not found ");
           setMovies(data.Search);
+          setError("");
           console.log(data.Search);
           // setIsLoading is false once the data is fetched.
         } catch (err) {
           // for catching error.
           console.error(err.message);
-          setError(err.message);
+          // this ignores the abortError error.
+          if (err.name !== "AbortError") {
+            setError(err.message);
+          }
         } finally {
           // finally exicute the code
           setIsLoading(false);
@@ -125,6 +133,10 @@ export default function App() {
       }
       // Here, i'm calling moviesData function because its inside another function.
       moviesData();
+      // this cancels the fetch request
+      return function () {
+        controller.abort();
+      };
     },
     //Here, the query state is a  depedency array and every time this state changes the useEffect hook will execute and re-render the query result.
     [query]
@@ -331,13 +343,17 @@ function MovieDetails({
     onAddWatched(addWatchedMovie);
     handleCloseMovie();
   }
-  //  This useEffect changes the title of movie in the browser title.
+  // This useEffect changes the title of movie in the browser title.
 
   useEffect(
     function () {
       // if there is no title immediately return.
       if (!title) return;
       document.title = `Movie || ${title}`;
+      // This is a useEffect's clean up function which runs after the component has unmounted or the  component has been destroyed.
+      return function () {
+        document.title = `Movie App`;
+      };
     },
     [title]
   );
