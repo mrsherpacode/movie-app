@@ -114,7 +114,7 @@ export default function App() {
           // setIsLoading is false once the data is fetched.
         } catch (err) {
           // for catching error.
-          console.error(err.message);
+          // console.error(err.message);
           // this ignores the abortError error.
           if (err.name !== "AbortError") {
             setError(err.message);
@@ -131,6 +131,8 @@ export default function App() {
         setError("");
         return;
       }
+      //close the movie details when the other name is typed in search button.
+      handleCloseMovie();
       // Here, i'm calling moviesData function because its inside another function.
       moviesData();
       // this cancels the fetch request
@@ -343,8 +345,29 @@ function MovieDetails({
     onAddWatched(addWatchedMovie);
     handleCloseMovie();
   }
-  // This useEffect changes the title of movie in the browser title.
 
+  // This useEffect closes the movie details when the Escape key is pressed.
+  useEffect(
+    function () {
+      function callback(e) {
+        if (e.code === "Escape") {
+          // calling this function closes the movie
+          handleCloseMovie();
+          console.log("closing");
+        }
+      }
+      // adding keydown eventlistener on callback function.
+      document.addEventListener("keydown", callback);
+      //This cleanup function removes the addEventlistener after the component has  unmounted or changed
+      return function () {
+        document.removeEventListener("keydown", callback);
+      };
+    },
+
+    [handleCloseMovie]
+  );
+
+  // This useEffect changes the title of movie in the browser title.
   useEffect(
     function () {
       // if there is no title immediately return.
