@@ -1,65 +1,24 @@
 import { useEffect, useState } from "react";
 import StarRating from "./StarRating";
 
-const tempMovieData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt0133093",
-    Title: "The Matrix",
-    Year: "1999",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg",
-  },
-  {
-    imdbID: "tt6751668",
-    Title: "Parasite",
-    Year: "2019",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg",
-  },
-];
-
-const tempWatchedData = [
-  {
-    imdbID: "tt1375666",
-    Title: "Inception",
-    Year: "2010",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg",
-    runtime: 148,
-    imdbRating: 8.8,
-    userRating: 10,
-  },
-  {
-    imdbID: "tt0088763",
-    Title: "Back to the Future",
-    Year: "1985",
-    Poster:
-      "https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
-    runtime: 116,
-    imdbRating: 8.5,
-    userRating: 9,
-  },
-];
-
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 // The App comonent is parent of all other components //
-///// API KEY is from this site (https://www.omdbapi.com/)/////
 // here i'm lifting up state
 export default function App() {
   const [query, setQuery] = useState("");
   const [movies, setMovies] = useState([]);
-  const [watched, setWatched] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState();
   const [selectedId, setSelectedId] = useState(null);
+  // Here, inside the useState i'm using callback function(dose'nt take any arguments) that gets watched movie list from the localStorage which runs only on initial render.
+  const [watched, setWatched] = useState(function () {
+    // Here, watched means the name of the key in localStorage.
+    const watchedMovie = localStorage.getItem("watched");
+    // json.parse() converts the string into jason object
+    return JSON.parse(watchedMovie);
+  });
+  ///// API KEY is from this site (https://www.omdbapi.com/)/////
   const KEY = "e9c51d8d";
 
   // Show movie details //
@@ -84,6 +43,19 @@ export default function App() {
   function handleDeleteWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
+  ////////////////////////////////////////////////////
+  //This useEffect will store the watched movie lists into the localStorage and displays it on the user interface on the initial render.
+  useEffect(
+    function () {
+      const storedValue = localStorage.setItem(
+        // json.stringigy() converts the object into string.
+        "watched",
+        JSON.stringify(watched)
+      );
+      // console.log(storedValue);
+    },
+    [watched]
+  );
 
   //  here, i'm using useEffect hook here
   // The function inside useEffect is executed after the component renders for the first time (on mount).
@@ -353,7 +325,6 @@ function MovieDetails({
         if (e.code === "Escape") {
           // calling this function closes the movie
           handleCloseMovie();
-          console.log("closing");
         }
       }
       // adding keydown eventlistener on callback function.
