@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 
 const average = (arr) =>
@@ -202,6 +202,27 @@ function Logo() {
 }
 //Search component //
 function Search({ query, setQuery }) {
+  //Here, i'm creating useRef state.  //
+  const inputEl = useRef(null);
+  // In order for useRef to work we have  to use useEffect.
+  useEffect(
+    function () {
+      function callback(e) {
+        // if the element is already selected just just return
+        if (document.activeElement === inputEl.current) return;
+        if (e.code === "Enter") {
+          inputEl.current.focus();
+          setQuery("");
+        }
+      }
+      //adding keydown(Enter) to callback function.
+      document.addEventListener("keydown", callback);
+      // cleaning up the keydown event
+      return document.addEventListener("keydown", callback);
+    },
+    [setQuery]
+  );
+
   return (
     <input
       className="search"
@@ -209,6 +230,8 @@ function Search({ query, setQuery }) {
       placeholder="Search movies..."
       value={query}
       onChange={(e) => setQuery(e.target.value)}
+      //connecting input element with useRef using ref prop
+      ref={inputEl}
     />
   );
 }
