@@ -303,6 +303,15 @@ function MovieDetails({
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState("");
+
+  // This useRef counts the total number that a user clicks the userRating star.
+  const countRef = useRef(0);
+  useEffect(
+    function () {
+      if (userRating) countRef.current++;
+    },
+    [userRating]
+  );
   // Here, i'm deriving  the state
   // checking if it's watched or not
   const isWatched = watched.map((movie) => movie.imdbID).includes(selectedId);
@@ -335,6 +344,8 @@ function MovieDetails({
       imdbRating: Number(imdbRating),
       runtime: Number(runtime.split(" ").at(0)),
       userRating,
+      //countRatingDecision does'nt show on the user interface.
+      countRatignDecision: countRef.current,
     };
 
     onAddWatched(addWatchedMovie);
