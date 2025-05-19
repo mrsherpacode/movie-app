@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
-
+import { useMovies } from "./useMovies";
+const KEY = "e9c51d8d";
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 // The App comonent is parent of all other components //
 // here i'm lifting up state
 export default function App() {
   const [query, setQuery] = useState("");
-  const [movies, setMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState();
   const [selectedId, setSelectedId] = useState(null);
+  //  Here, i'm calling a custom hook called useMovies from useMovies.js file. and destructured the return objects.
+  const { movies, isLoading, error } = useMovies(query);
   // Here, inside the useState i'm using callback function(dose'nt take any arguments) that gets watched movie list from the localStorage which runs only on initial render.
   const [watched, setWatched] = useState(function () {
     // Here, watched means the name of the key in localStorage.
@@ -18,8 +18,6 @@ export default function App() {
     // json.parse() converts the string into jason object
     return JSON.parse(watchedMovie);
   });
-  ///// API KEY is from this site (https://www.omdbapi.com/)/////
-  const KEY = "e9c51d8d";
 
   // Show movie details //
   function handleMovieDetails(id) {
@@ -57,64 +55,6 @@ export default function App() {
     [watched]
   );
 
-  //  here, i'm using useEffect hook here
-  // The function inside useEffect is executed after the component renders for the first time (on mount).
-  // It fetches data from the OMDB API using the fetch function.
-  useEffect(
-    function () {
-      //  This native browser API cancel the fetch request.
-      const controller = new AbortController();
-      async function moviesData() {
-        try {
-          // this API link is from this site (https://www.omdbapi.com/)
-          // this shows loading spinner on the screen before the movie data is fetched.
-          setIsLoading(true);
-          setError("");
-          const res = await fetch(
-            `http://www.omdbapi.com/?apikey=${KEY}&s=${query}`,
-            //this seconds argument connects with asynchronous operation.
-            { signal: controller.signal }
-          );
-          //Throwing error when there is problem when fetching data.
-          if (!res.ok) throw new Error("Something went wrong");
-          const data = await res.json();
-          //  Throwing error if the search do not matches the search movies
-          if (data.Response === "False") throw new Error("movies not found ");
-          setMovies(data.Search);
-          setError("");
-          console.log(data.Search);
-          // setIsLoading is false once the data is fetched.
-        } catch (err) {
-          // for catching error.
-          // console.error(err.message);
-          // this ignores the abortError error.
-          if (err.name !== "AbortError") {
-            setError(err.message);
-          }
-        } finally {
-          // finally exicute the code
-          setIsLoading(false);
-        }
-      }
-
-      // if the search queries is less then three words then  make setMovies empty
-      if (query.length < 3) {
-        setMovies([]);
-        setError("");
-        return;
-      }
-      //close the movie details when the other name is typed in search button.
-      handleCloseMovie();
-      // Here, i'm calling moviesData function because its inside another function.
-      moviesData();
-      // this cancels the fetch request
-      return function () {
-        controller.abort();
-      };
-    },
-    //Here, the query state is a  depedency array and every time this state changes the useEffect hook will execute and re-render the query result.
-    [query]
-  );
   return (
     <>
       {/* logo, search, NumResults are childrens  of NavBar. */}
