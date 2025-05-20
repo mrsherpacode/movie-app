@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
+import { useLocalStorage } from "./useLocaleStorage";
 const KEY = "e9c51d8d";
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -11,13 +12,9 @@ export default function App() {
   const [selectedId, setSelectedId] = useState(null);
   //  Here, i'm calling a custom hook called useMovies from useMovies.js file. and destructured the return objects.
   const { movies, isLoading, error } = useMovies(query);
-  // Here, inside the useState i'm using callback function(dose'nt take any arguments) that gets watched movie list from the localStorage which runs only on initial render.
-  const [watched, setWatched] = useState(function () {
-    // Here, watched means the name of the key in localStorage.
-    const watchedMovie = localStorage.getItem("watched");
-    // json.parse() converts the string into jason object
-    return JSON.parse(watchedMovie);
-  });
+
+  // Here, i'm calling the custom hook called useLocalStorage()
+  const [watched, setWatched] = useLocalStorage([], "watched");
 
   // Show movie details //
   function handleMovieDetails(id) {
@@ -41,19 +38,6 @@ export default function App() {
   function handleDeleteWatched(id) {
     setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
   }
-  ////////////////////////////////////////////////////
-  //This useEffect will store the watched movie lists into the localStorage and displays it on the user interface on the initial render.
-  useEffect(
-    function () {
-      const storedValue = localStorage.setItem(
-        // json.stringigy() converts the object into string.
-        "watched",
-        JSON.stringify(watched)
-      );
-      // console.log(storedValue);
-    },
-    [watched]
-  );
 
   return (
     <>
