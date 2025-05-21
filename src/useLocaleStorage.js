@@ -9,7 +9,6 @@ export function useLocalStorage(initialRender, key) {
     // json.parse() converts the string into jason object
     return watchedMovie ? JSON.parse(watchedMovie) : initialRender;
   });
-
   ////////////////////////////////////////////////////
   //This useEffect will store the watched movie lists into the localStorage and displays it on the user interface on the initial render.
   useEffect(

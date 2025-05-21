@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorage } from "./useLocaleStorage";
+import { useKey } from "./useKey";
 const KEY = "e9c51d8d";
 const average = (arr) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -129,23 +130,13 @@ function Search({ query, setQuery }) {
   //Here, i'm creating useRef state.  //
   const inputEl = useRef(null);
   // In order for useRef to work we have  to use useEffect.
-  useEffect(
-    function () {
-      function callback(e) {
-        // if the element is already selected just just return
-        if (document.activeElement === inputEl.current) return;
-        if (e.code === "Enter") {
-          inputEl.current.focus();
-          setQuery("");
-        }
-      }
-      //adding keydown(Enter) to callback function.
-      document.addEventListener("keydown", callback);
-      // cleaning up the keydown event
-      return document.addEventListener("keydown", callback);
-    },
-    [setQuery]
-  );
+  // Here, i'm calling  a re-useable custom hook called useKey()
+  useKey("Enter", function () {
+    // if the element is already selected just just return
+    if (document.activeElement === inputEl.current) return;
+    inputEl.current.focus();
+    setQuery("");
+  });
 
   return (
     <input
@@ -276,25 +267,8 @@ function MovieDetails({
     handleCloseMovie();
   }
 
-  // This useEffect closes the movie details when the Escape key is pressed.
-  useEffect(
-    function () {
-      function callback(e) {
-        if (e.code === "Escape") {
-          // calling this function closes the movie
-          handleCloseMovie();
-        }
-      }
-      // adding keydown eventlistener on callback function.
-      document.addEventListener("keydown", callback);
-      //This cleanup function removes the addEventlistener after the component has  unmounted or changed
-      return function () {
-        document.removeEventListener("keydown", callback);
-      };
-    },
-
-    [handleCloseMovie]
-  );
+  //  Here, i'm calling a re-useable custom hook called useKey() that closes the movie details when the Escape key is pressed.
+  useKey("Escape", handleCloseMovie);
 
   // This useEffect changes the title of movie in the browser title.
   useEffect(
